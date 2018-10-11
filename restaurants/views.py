@@ -76,8 +76,10 @@ def restaurant_create(request):
     return render(request, 'create.html', context)
 
 def item_create(request, restaurant_id):
-    form = ItemForm()
     restaurant = Restaurant.objects.get(id=restaurant_id)
+    if not (request.user.is_staff or request.user == restaurant.owner):
+        return redirect('signin')
+    form = ItemForm()
     if request.method == "POST":
         form = ItemForm(request.POST)
         if form.is_valid():
@@ -95,7 +97,7 @@ def restaurant_update(request, restaurant_id):
     restaurant_obj = Restaurant.objects.get(id=restaurant_id)
 
     if not (request.user.is_staff or request.user == restaurant_obj.owner):
-        return redirect('no access')
+        return redirect('signin')
 
     form = RestaurantForm(instance=restaurant_obj)
     if request.method == "POST":
@@ -113,7 +115,7 @@ def restaurant_delete(request, restaurant_id):
 
     restaurant_obj = Restaurant.objects.get(id=restaurant_id)
     if not (request.user.is_staff):
-        return redirect('no access')
+        return redirect('signin')
         
     restaurant_obj.delete()
     return redirect('restaurant-list')
